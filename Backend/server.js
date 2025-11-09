@@ -74,6 +74,13 @@ app.get('/', (req, res) => {
   });
 });
 
+
+app.get('/',(req,res)=>{
+  res.send({
+    activeStatus:true,
+    error:false,
+  })
+})
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
