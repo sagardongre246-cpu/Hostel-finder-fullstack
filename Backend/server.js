@@ -70,10 +70,11 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Welcome to HostelFinder API',
     version: '1.0.0',
-    documentation: '/api/docs'
+    documentation: '/api/docs',
+    activeStatus: true,
+    error: false
   });
 });
-
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({

@@ -5,6 +5,7 @@
 
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const connectDB = require('./config/database');
 const User = require('./models/User');
 const Hostel = require('./models/Hostel');
 const Booking = require('./models/Booking');
@@ -14,10 +15,7 @@ const Review = require('./models/Review');
 dotenv.config();
 
 // Connect to DB
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+connectDB();
 
 // Sample data
 const users = [

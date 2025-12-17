@@ -155,6 +155,5 @@ bookingSchema.methods.isPast = function() {
 bookingSchema.index({ user: 1, createdAt: -1 });
 bookingSchema.index({ hostel: 1, checkIn: 1, checkOut: 1 });
 bookingSchema.index({ bookingStatus: 1 });
-bookingSchema.index({ confirmationCode: 1 });
 
 module.exports = mongoose.model('Booking', bookingSchema);
