@@ -1,0 +1,9 @@
+﻿
+D:\Projects\Hostel-finder-fullstack\Frontend\src\components\Map.js
+  5:21  warning  'setIsLoading' is assigned a value but never used  no-unused-vars
+
+D:\Projects\Hostel-finder-fullstack\Frontend\src\components\SocialChooser.js
+  126:6  warning  React Hook useEffect has a missing dependency: 'closeChooser'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+Γ£û 2 problems (0 errors, 2 warnings)
+
