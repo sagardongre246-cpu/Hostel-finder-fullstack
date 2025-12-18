@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { auth } from '../services/api';
 
 const RegistrationModal = ({ isOpen, onClose, onRegistrationSuccess }) => {
   const [formData, setFormData] = useState({
@@ -27,8 +28,78 @@ const RegistrationModal = ({ isOpen, onClose, onRegistrationSuccess }) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate form submission
-    setTimeout(() => {
+    try {
+      const response = await auth.register({
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.mobile,
+        city: formData.city,
+        checkIn: formData.checkIn,
+        checkOut: formData.checkOut,
+        roomType: formData.roomType,
+        budget: formData.budget,
+        notes: formData.notes
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        setIsSubmitting(false);
+        setIsSuccess(true);
+        
+        // Store token if provided
+        if (result.token) {
+          localStorage.setItem('authToken', result.token);
+        }
+        
+        // Create user data from response
+        const userData = {
+          id: result.user?.id || result.id || Date.now(),
+          name: result.user?.name || formData.fullName,
+          email: result.user?.email || formData.email,
+          phone: result.user?.phone || formData.mobile,
+          city: result.user?.city || formData.city,
+          photo: null,
+          joinDate: result.user?.joinDate || new Date().toISOString(),
+          preferences: {
+            currency: 'INR',
+            language: 'English',
+            notifications: true
+          }
+        };
+        
+        // Auto-close after success animation
+        setTimeout(() => {
+          setIsSuccess(false);
+          
+          // Call registration success callback
+          if (onRegistrationSuccess) {
+            onRegistrationSuccess(userData);
+          }
+          
+          onClose();
+          // Reset form
+          setFormData({
+            fullName: '',
+            email: '',
+            mobile: '',
+            city: '',
+            checkIn: '',
+            checkOut: '',
+            roomType: 'shared',
+            budget: '',
+            notes: ''
+          });
+        }, 2000);
+      } else {
+        const errorData = await response.json();
+        setIsSubmitting(false);
+        alert(errorData.message || 'Registration failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      
+      // Fallback to mock registration for development
       setIsSubmitting(false);
       setIsSuccess(true);
       
@@ -71,7 +142,7 @@ const RegistrationModal = ({ isOpen, onClose, onRegistrationSuccess }) => {
           notes: ''
         });
       }, 2000);
-    }, 2000);
+    }
   };
 
   if (!isOpen) return null;

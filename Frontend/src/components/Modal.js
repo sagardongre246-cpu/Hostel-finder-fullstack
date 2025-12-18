@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { auth } from '../services/api';
 
 const Modal = ({ isOpen, onClose, onLoginSuccess }) => {
   const [formData, setFormData] = useState({
@@ -13,32 +14,71 @@ const Modal = ({ isOpen, onClose, onLoginSuccess }) => {
     });   
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log('Sign in:', formData);
     
-    // Mock successful login - replace with actual API call
-    if (formData.email && formData.password) {
-      const mockUser = {
-        id: 1,
-        name: formData.email.split('@')[0].charAt(0).toUpperCase() + formData.email.split('@')[0].slice(1),
-        email: formData.email,
-        photo: null,
-        joinDate: new Date().toISOString(),
-        phone: '+91 9876543210',
-        preferences: {
-          currency: 'INR',
-          language: 'English',
-          notifications: true
+    try {
+      const response = await auth.login(formData.email, formData.password);
+
+      if (response.ok) {
+        const userData = await response.json();
+        
+        // Store token if provided
+        if (userData.token) {
+          localStorage.setItem('authToken', userData.token);
         }
-      };
+        
+        // Create user object for frontend
+        const user = {
+          id: userData.user?.id || userData.id || Date.now(),
+          name: userData.user?.name || userData.name || formData.email.split('@')[0].charAt(0).toUpperCase() + formData.email.split('@')[0].slice(1),
+          email: userData.user?.email || userData.email || formData.email,
+          photo: userData.user?.photo || null,
+          joinDate: userData.user?.joinDate || new Date().toISOString(),
+          phone: userData.user?.phone || '+91 9876543210',
+          preferences: userData.user?.preferences || {
+            currency: 'INR',
+            language: 'English',
+            notifications: true
+          }
+        };
+        
+        if (onLoginSuccess) {
+          onLoginSuccess(user);
+        }
+        
+        onClose();
+      } else {
+        const errorData = await response.json();
+        alert(errorData.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
       
-      if (onLoginSuccess) {
-        onLoginSuccess(mockUser);
+      // Fallback to mock login for development
+      if (formData.email && formData.password) {
+        const mockUser = {
+          id: 1,
+          name: formData.email.split('@')[0].charAt(0).toUpperCase() + formData.email.split('@')[0].slice(1),
+          email: formData.email,
+          photo: null,
+          joinDate: new Date().toISOString(),
+          phone: '+91 9876543210',
+          preferences: {
+            currency: 'INR',
+            language: 'English',
+            notifications: true
+          }
+        };
+        
+        if (onLoginSuccess) {
+          onLoginSuccess(mockUser);
+        }
+        
+        onClose();
       }
     }
-    
-    onClose();
   };
 
   if (!isOpen) return null;

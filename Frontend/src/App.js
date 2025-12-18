@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import BookingForm from './components/BookingForm';
@@ -9,12 +9,18 @@ import Modal from './components/Modal';
 import Footer from './components/Footer';
 import AIAssistant from './components/AIAssistant';
 import RegistrationModal from './components/RegistrationModal';
+import { testBackendConnection } from './utils/testConnection';
 
 function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false);
   const [currentHotel, setCurrentHotel] = useState('GoNest Hostel Bengaluru');
   // User state is managed by Navbar component via localStorage
+
+  // Test backend connection on app load
+  useEffect(() => {
+    testBackendConnection();
+  }, []);
 
   const handleLoginClick = () => {
     setIsLoginModalOpen(true);

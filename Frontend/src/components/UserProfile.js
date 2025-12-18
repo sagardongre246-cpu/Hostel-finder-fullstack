@@ -1,30 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './UserProfile.css';
+import { bookings, users } from '../services/api';
 
 const UserProfile = ({ user, onClose }) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [bookingHistory, setBookingHistory] = useState([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(false);
 
-  // Mock booking history
-  const bookingHistory = [
-    {
-      id: 1,
-      hostelName: 'GoNest Hostel Bengaluru',
-      location: 'Koramangala, Bengaluru',
-      checkIn: '2024-11-15',
-      checkOut: '2024-11-20',
-      status: 'Completed',
-      price: '₹7,500'
-    },
-    {
-      id: 2,
-      hostelName: 'Mumbai Central PG',
-      location: 'Andheri West, Mumbai',
-      checkIn: '2024-12-01',
-      checkOut: '2024-12-05',
-      status: 'Upcoming',
-      price: '₹9,000'
+  // Load user bookings when component mounts
+  useEffect(() => {
+    const loadBookings = async () => {
+      setIsLoadingBookings(true);
+      try {
+        const response = await bookings.getMyBookings();
+        if (response.ok) {
+          const data = await response.json();
+          setBookingHistory(data.bookings || []);
+        } else {
+          console.error('Failed to load bookings');
+          // Fallback to mock data
+          setBookingHistory([
+            {
+              id: 1,
+              hostelName: 'GoNest Hostel Bengaluru',
+              location: 'Koramangala, Bengaluru',
+              checkIn: '2024-11-15',
+              checkOut: '2024-11-20',
+              status: 'Completed',
+              price: '₹7,500'
+            },
+            {
+              id: 2,
+              hostelName: 'Mumbai Central PG',
+              location: 'Andheri West, Mumbai',
+              checkIn: '2024-12-01',
+              checkOut: '2024-12-05',
+              status: 'Upcoming',
+              price: '₹9,000'
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+        // Fallback to mock data
+        setBookingHistory([
+          {
+            id: 1,
+            hostelName: 'GoNest Hostel Bengaluru',
+            location: 'Koramangala, Bengaluru',
+            checkIn: '2024-11-15',
+            checkOut: '2024-11-20',
+            status: 'Completed',
+            price: '₹7,500'
+          },
+          {
+            id: 2,
+            hostelName: 'Mumbai Central PG',
+            location: 'Andheri West, Mumbai',
+            checkIn: '2024-12-01',
+            checkOut: '2024-12-05',
+            status: 'Upcoming',
+            price: '₹9,000'
+          }
+        ]);
+      } finally {
+        setIsLoadingBookings(false);
+      }
+    };
+
+    if (activeTab === 'bookings' || activeTab === 'overview') {
+      loadBookings();
     }
-  ];
+  }, [activeTab]);
 
   // Mock saved hostels
   const savedHostels = [
@@ -158,8 +205,13 @@ const UserProfile = ({ user, onClose }) => {
           {activeTab === 'bookings' && (
             <div className="profile-bookings">
               <h3>Booking History</h3>
-              <div className="bookings-list">
-                {bookingHistory.map((booking) => (
+              {isLoadingBookings ? (
+                <div className="loading-bookings">
+                  <p>Loading your bookings...</p>
+                </div>
+              ) : (
+                <div className="bookings-list">
+                  {bookingHistory.length > 0 ? bookingHistory.map((booking) => (
                   <div key={booking.id} className="booking-card">
                     <div className="booking-header">
                       <h4>{booking.hostelName}</h4>
@@ -186,8 +238,13 @@ const UserProfile = ({ user, onClose }) => {
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
+                  )) : (
+                    <div className="no-bookings">
+                      <p>No bookings found. Start exploring hostels to make your first booking!</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

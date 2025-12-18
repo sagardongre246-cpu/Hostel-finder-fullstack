@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import UserProfile from './UserProfile';
+import { auth } from '../services/api';
 
 const Navbar = ({ onLoginClick, onRegisterClick, onLoginSuccess: parentLoginSuccess }) => {
   const [activeCategory, setActiveCategory] = useState('Stays');
@@ -47,10 +48,17 @@ const Navbar = ({ onLoginClick, onRegisterClick, onLoginSuccess: parentLoginSucc
   }, [parentLoginSuccess]);
 
   // Logout function
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    setShowProfileMenu(false);
+  const handleLogout = async () => {
+    try {
+      await auth.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      localStorage.removeItem('user');
+      localStorage.removeItem('authToken');
+      setShowProfileMenu(false);
+    }
   };
 
   // Apply theme to body

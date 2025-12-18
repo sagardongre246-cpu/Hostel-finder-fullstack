@@ -13,7 +13,7 @@ const socialProfiles = {
   },
   linkedin: {
     me: "https://www.linkedin.com/in/sagar-dongare-522568377?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
-    partner: "http://linkedin.com/in/pranchal-tripathi-935b89247"
+    partner: "https://linkedin.com/in/pranchal-tripathi-935b89247"
   },
   github: {
     me: "https://github.com/sagardongre246-cpu",
