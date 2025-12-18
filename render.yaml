@@ -1,0 +1,48 @@
+services:
+  # Backend API Service
+  - type: web
+    name: hostelfinder-backend
+    env: node
+    plan: free
+    buildCommand: cd Backend && npm install
+    startCommand: cd Backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        value: HostelFinder_Super_Secret_JWT_Key_2024_Production_Ready
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: JWT_COOKIE_EXPIRE
+        value: 7
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: 587
+      - key: EMAIL_FROM
+        value: noreply@hostelfinder.com
+      - key: MAX_FILE_SIZE
+        value: 5242880
+      - key: FILE_UPLOAD_PATH
+        value: ./uploads
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: ADMIN_EMAIL
+        value: admin@hostelfinder.com
+      - key: ADMIN_PASSWORD
+        value: Admin@123456
+
+  # Frontend Static Site
+  - type: web
+    name: hostelfinder-frontend
+    env: static
+    plan: free
+    buildCommand: cd Frontend && npm install && npm run build
+    staticPublishPath: Frontend/build
+    envVars:
+      - key: NODE_ENV
+        value: production
