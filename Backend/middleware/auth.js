@@ -3,8 +3,8 @@
  * Protects routes and verifies JWT tokens
  */
 
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 /**
  * Protect routes - Verify JWT token
@@ -12,51 +12,56 @@ const User = require('../models/User');
 exports.protect = async (req, res, next) => {
   let token;
 
-  // Check for token in headers
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
+  // 1. Check token in Authorization header
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
   }
 
-  // Check if token exists
+  // 2. If token not found
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to access this route. Please login.'
+      message: "Not authorized. Token missing. Please login.",
     });
   }
 
   try {
-    // Verify token
+    // 3. Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Get user from token
-    req.user = await User.findById(decoded.id).select('-password');
+    // 4. Find user from decoded token
+    const user = await User.findById(decoded.id).select("-password");
 
-    if (!req.user) {
+    if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User not found'
+        message: "User no longer exists.",
       });
     }
 
+    // 5. Attach user to request
+    req.user = user;
     next();
   } catch (error) {
     return res.status(401).json({
       success: false,
-      message: 'Not authorized to access this route. Invalid token.'
+      message: "Invalid or expired token.",
     });
   }
 };
 
 /**
- * Authorize specific roles
+ * Role based authorization
  */
 exports.authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: `User role '${req.user.role}' is not authorized to access this route`
+        message: "You are not authorized to access this route.",
       });
     }
     next();
@@ -64,23 +69,29 @@ exports.authorize = (...roles) => {
 };
 
 /**
- * Optional authentication - doesn't fail if no token
+ * Optional authentication
+ * Does not block request if token is missing
  */
 exports.optionalAuth = async (req, res, next) => {
   let token;
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
   }
 
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select('-password');
+      const user = await User.findById(decoded.id).select("-password");
+      req.user = user || null;
     } catch (error) {
-      // Token invalid, but continue without user
       req.user = null;
     }
+  } else {
+    req.user = null;
   }
 
   next();
