@@ -1,69 +1,90 @@
-// API Configuration and Helper Functions
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'https://hostel-finder-backend-qa15.onrender.com';
+// API Configuration
+const API_BASE_URL =
+  process.env.REACT_APP_BASE_URL ||
+  "https://hostel-finder-backend-gq15.onrender.com";
 
-// Helper function to get auth token
+// Get auth token
 const getAuthToken = () => {
-  return localStorage.getItem('authToken');
+  return localStorage.getItem("authToken");
 };
 
-// Helper function to make authenticated requests
+// Common authenticated request handler
 const makeAuthenticatedRequest = async (url, options = {}) => {
   const token = getAuthToken();
+
   const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers
+    "Content-Type": "application/json",
+    ...(options.headers || {}),
   };
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  return fetch(`${API_BASE_URL}${url}`, {
+  const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
-    headers
+    headers,
   });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "API request failed");
+  }
+
+  return data;
 };
 
-// API Functions
+// API object
 export const api = {
-  // Authentication APIs
+  // ================= AUTH =================
   auth: {
     login: async (email, password) => {
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-      return response;
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      return data;
     },
 
     register: async (userData) => {
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
       });
-      return response;
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+
+      return data;
     },
 
     logout: async () => {
-      const response = await makeAuthenticatedRequest('/api/auth/logout', {
-        method: 'POST'
+      const data = await makeAuthenticatedRequest("/api/auth/logout", {
+        method: "POST",
       });
-      localStorage.removeItem('authToken');
-      return response;
-    }
+      localStorage.removeItem("authToken");
+      return data;
+    },
   },
 
-  // Hostels APIs
+  // ================= HOSTELS =================
   hostels: {
     getAll: async (filters = {}) => {
-      const queryParams = new URLSearchParams(filters).toString();
-      const url = queryParams ? `/api/hostels?${queryParams}` : '/api/hostels';
+      const query = new URLSearchParams(filters).toString();
+      const url = query ? `/api/hostels?${query}` : "/api/hostels";
       return makeAuthenticatedRequest(url);
     },
 
@@ -73,27 +94,32 @@ export const api = {
 
     search: async (searchParams) => {
       const response = await fetch(`${API_BASE_URL}/api/hostels/search`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(searchParams)
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(searchParams),
       });
-      return response;
-    }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Search failed");
+      }
+
+      return data;
+    },
   },
 
-  // Bookings APIs
+  // ================= BOOKINGS =================
   bookings: {
     create: async (bookingData) => {
-      return makeAuthenticatedRequest('/api/bookings', {
-        method: 'POST',
-        body: JSON.stringify(bookingData)
+      return makeAuthenticatedRequest("/api/bookings", {
+        method: "POST",
+        body: JSON.stringify(bookingData),
       });
     },
 
     getMyBookings: async () => {
-      return makeAuthenticatedRequest('/api/bookings/my-bookings');
+      return makeAuthenticatedRequest("/api/bookings/my-bookings");
     },
 
     getById: async (id) => {
@@ -102,28 +128,28 @@ export const api = {
 
     cancel: async (id) => {
       return makeAuthenticatedRequest(`/api/bookings/${id}/cancel`, {
-        method: 'PUT'
+        method: "PUT",
       });
-    }
+    },
   },
 
-  // Users APIs
+  // ================= USERS =================
   users: {
     getProfile: async () => {
-      return makeAuthenticatedRequest('/api/users/profile');
+      return makeAuthenticatedRequest("/api/users/profile");
     },
 
     updateProfile: async (userData) => {
-      return makeAuthenticatedRequest('/api/users/profile', {
-        method: 'PUT',
-        body: JSON.stringify(userData)
+      return makeAuthenticatedRequest("/api/users/profile", {
+        method: "PUT",
+        body: JSON.stringify(userData),
       });
-    }
-  }
+    },
+  },
 };
 
-// Export individual functions for convenience
+// Named exports (clean usage)
 export const { auth, hostels, bookings, users } = api;
 
-// Export base URL for direct use
+// Base URL export
 export { API_BASE_URL };
